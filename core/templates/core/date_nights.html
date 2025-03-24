@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Date Nights | Man and The City{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">Date Night Stories</h2>
+  <div class="row">
+    {% for post in posts %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ post.title }}</h5>
+            <small class="text-muted">{{ post.date }}</small>
+            <p class="card-text mt-2 text-muted" style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;">
+              {{ post.intro }}
+            </p>
+            <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-sm btn-outline-dark">Read More</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No date night stories yet. Stay tuned!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

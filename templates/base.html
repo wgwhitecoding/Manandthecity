@@ -25,9 +25,9 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="#">Date Nights</a></li>
+        <li></li><a class="nav-link" href="{% url 'date_nights' %}">Date Nights</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Ex Files</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Love & Laughs</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Love & Heartbreak</a></li>
 
         {% if user.is_authenticated %}
           <li class="nav-item">

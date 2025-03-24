@@ -16,6 +16,15 @@ class Post(models.Model):
     intro = models.TextField(blank=True)
     content = models.TextField()
     is_premium = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='post_images/', blank=True, null=True)
+
+    # Ratings
+    chemistry_rating = models.IntegerField(default=0)
+    banter_rating = models.IntegerField(default=0)
+    looks_rating = models.IntegerField(default=0)
+    vibe_rating = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
+
+

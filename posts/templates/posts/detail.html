@@ -2,8 +2,103 @@
 {% block title %}{{ post.title }} | Man and The City{% endblock %}
 
 {% block content %}
-  <h2>{{ post.title }}</h2>
-  <p class="text-muted">{{ post.date|date:"F j, Y" }}</p>
+<div class="container my-5">
+
+  <!-- Post header and rating card aligned horizontally -->
+  <div class="d-flex justify-content-between align-items-start flex-wrap">
+    <div class="me-3">
+      <h2>{{ post.title }}</h2>
+      <p class="text-muted">{{ post.date|date:"F j, Y" }}</p>
+      <p class="lead">{{ post.intro }}</p>
+    </div>
+
+    <!-- Rating Card aligned to top-right -->
+    <div class="rating-card" id="ratingCard">
+      <div class="card-inner">
+        <div class="card-front d-flex align-items-center justify-content-center p-4 bg-light border">
+          <strong>Click to Reveal Ratings</strong>
+        </div>
+        <div class="card-back bg-white border p-4 text-center">
+          {% if request.user.is_authenticated %}
+            <h5 class="mb-3">Rating Breakdown</h5>
+            <ul class="list-unstyled mb-0">
+              <li><strong>Chemistry:</strong> {{ post.chemistry_rating }}/5</li>
+              <li><strong>Banter:</strong> {{ post.banter_rating }}/5</li>
+              <li><strong>Looks:</strong> {{ post.looks_rating }}/5</li>
+              <li><strong>Vibe:</strong> {{ post.vibe_rating }}/5</li>
+            </ul>
+          {% else %}
+            <p>This rating is 🔒 for subscribers only.</p>
+            <a href="{% url 'subscribe_tease' %}" class="btn btn-danger btn-sm mt-2">Subscribe to Unlock</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if post.image %}
+    <img src="{{ post.image.url }}" class="img-fluid my-3 rounded shadow-sm" alt="{{ post.title }}">
+  {% endif %}
+
   <hr>
   <p>{{ post.content|linebreaks }}</p>
+</div>
+
+<!-- Flip card styling -->
+<style>
+  .rating-card {
+    width: 250px;
+    height: 160px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  .rating-card.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-front,
+  .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+  }
+
+  @media (max-width: 768px) {
+    .d-flex {
+      flex-direction: column;
+    }
+
+    .rating-card {
+      align-self: start;
+      margin-top: 1rem;
+    }
+  }
+</style>
+
+<!-- Flip card script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const card = document.getElementById("ratingCard");
+    card.addEventListener("click", function () {
+      card.classList.toggle("flipped");
+    });
+  });
+</script>
 {% endblock %}

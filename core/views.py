@@ -3,6 +3,7 @@ from posts.models import Post
 from django.conf import settings
 from django.views import View
 from django.http import JsonResponse
+
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -34,6 +35,10 @@ def homepage(request):
         'posts': public_posts,
         'premium_teasers': premium_posts,
     })
+
+def date_nights(request):
+    posts = Post.objects.filter(is_premium=False).order_by('-date')
+    return render(request, 'core/date_nights.html', {'posts': posts})
 
 
 
