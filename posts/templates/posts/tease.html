@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Subscribe to Read | Man and The City{% endblock %}
+
+{% block content %}
+  <div class="text-center py-5">
+    <h2>This post is part of <em>The Intimate Edit</em>.</h2>
+    <p class="lead">Honest. Raw. Real. And... subscriber-only 🔥</p>
+    <p>Subscribe to unlock exclusive stories and juicy breakdowns.</p>
+    <a id="checkout-button" class="btn btn-dark btn-lg mt-3">Subscribe for £5/month</a>
+  </div>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script>
+    const stripe = Stripe("{{ STRIPE_PUBLISHABLE_KEY }}");
+    const checkoutButton = document.getElementById("checkout-button");
+
+    checkoutButton.addEventListener("click", function () {
+      fetch("{% url 'create_checkout_session' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}"
+        }
+      })
+      .then(response => response.json())
+      .then(session => {
+        return stripe.redirectToCheckout({ sessionId: session.id });
+      });
+    });
+  </script>
+{% endblock %}
+

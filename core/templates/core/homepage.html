@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Man & The City{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-3">Latest Posts</h2>
+  <div class="row">
+    {% for post in posts %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ post.title }}</h5>
+          <small class="text-muted">{{ post.date }}</small>
+          <p class="card-text mt-2">{{ post.preview }}</p>
+          <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h4 class="mb-3">💋 The Intimate Edit (Subscribers Only)</h4>
+<div class="row">
+  {% for post in premium_teasers %}
+    <div class="col-md-4 mb-4">
+      <div class="card border-danger h-100 text-center">
+        <div class="card-body">
+          <h5 class="card-title">{{ post.title }}</h5>
+
+          {% if user.is_authenticated %}
+            <p class="card-text text-muted">Exclusive post for subscribers 🔥</p>
+            <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-sm btn-outline-dark">Read More</a>
+          {% else %}
+            <p class="card-text text-muted">This one's a bit too hot for the public 👀</p>
+            <a href="{% url 'account_login' %}" class="btn btn-sm btn-outline-dark me-2">Log In</a>
+            <a href="{% url 'subscribe_tease' %}" class="btn btn-sm btn-danger">Subscribe</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+
