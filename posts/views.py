@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.conf import settings
 from django.views import View
+from django.db.models import Q
 from django.http import JsonResponse
 from .models import Post
 import stripe
@@ -45,7 +46,35 @@ class CreateCheckoutSessionView(View):
         )
         return JsonResponse({'id': session.id})
 
+def intimate_edit(request):
+    premium_posts = Post.objects.filter(is_premium=True).order_by('-date')
+    return render(request, 'posts/intimate_edit.html', {'premium_posts': premium_posts})
 
 
+def subscriber_exclusives(request):
+    if not request.user.is_authenticated:
+        return redirect('account_login')
 
+    premium_posts = Post.objects.filter(is_premium=True).order_by('-date')
+    return render(request, 'posts/subscriber_exclusives.html', {
+        'premium_posts': premium_posts
+    })
+
+    
+
+def search(request):
+    query = request.GET.get('q')
+    results = []
+
+    if query:
+        results = Post.objects.filter(
+            Q(title__icontains=query) | 
+            Q(intro__icontains=query) | 
+            Q(content__icontains=query)
+        ).order_by('-date')
+
+    return render(request, 'posts/search_results.html', {
+        'query': query,
+        'results': results,
+    })
 

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+  <h2>Search Results for "{{ query }}"</h2>
+  <div class="row">
+    {% if results %}
+      {% for post in results %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">{{ post.title }}</h5>
+              <small class="text-muted">{{ post.date }}</small>
+              <p class="card-text mt-2">{{ post.preview }}</p>
+              <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No posts found.</p>
+    {% endif %}
+  </div>
+{% endblock %}
