@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'posts',
     'accounts',
     'django.contrib.sites',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 SITE_ID = 1
 
@@ -153,6 +155,26 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList'],
+            ['Link', 'Unlink'],
+            ['Image', 'Embed', 'Iframe'],
+            ['RemoveFormat', 'Source'],
+        ],
+        'height': 300,
+        'width': 'auto',
+        'extraPlugins': ','.join([
+            'uploadimage',  # enables image uploads
+        ]),
+    }
+}
 
 
 # Default primary key field type

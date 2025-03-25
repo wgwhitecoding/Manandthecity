@@ -52,3 +52,86 @@
     .floating-social a:hover {
       background-color: #444;
     }
+
+    /* Apply Open Sans globally */
+body {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #212529;
+}
+
+/* Use Playfair Display for blog content */
+.post-content {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem !important;
+  line-height: 1.5;
+}
+
+
+
+
+
+
+/* Flip Card Style & Script detail html*/ 
+.rating-card {
+  width: 100%;
+  max-width: 350px;
+  height: 200px;
+  perspective: 1000px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  margin-top: -20px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.rating-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 110%;
+  backface-visibility: hidden;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-back h5 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.card-back ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.card-back li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}

@@ -22,7 +22,7 @@
           <small class="text-muted">{{ post.date }}</small>
           <p class="card-text intro-clamp mt-2">{{ post.intro }}</p>
           <p class="card-text">{{ post.preview }}</p>
-          <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
+          <a href="{% url 'posts:post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
         </div>
       </div>
     </div>
@@ -42,11 +42,11 @@
 
           {% if user.is_authenticated %}
             <p class="card-text text-muted">Exclusive post for subscribers 🔥</p>
-            <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
+            <a href="{% url 'posts:post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
           {% else %}
             <p class="card-text text-muted">This one's a bit too hot for the public 👀</p>
             <a href="{% url 'account_login' %}" class="btn btn-sm btn-outline-dark me-2">Log In</a>
-            <a href="{% url 'subscribe_tease' %}" class="btn btn-sm btn-danger">Subscribe</a>
+            <a href="{% url 'posts:subscribe_tease' %}" class="btn btn-sm btn-danger">Subscribe</a>
           {% endif %}
         </div>
       </div>

@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .views import CreateCheckoutSessionView
 
+app_name = 'posts'
 
 urlpatterns = [
     path('subscribe/tease/', views.tease, name='subscribe_tease'),
@@ -10,6 +11,9 @@ urlpatterns = [
     path('subscriber-exclusives/', views.subscriber_exclusives, name='subscriber_exclusives'),
     path('search/', views.search, name='search'),
     path('<slug:slug>/', views.post_detail, name='post_detail'),
+    path('<slug:slug>/comment/<int:comment_id>/edit/', views.edit_comment, name='edit_comment'),
+    path('<slug:slug>/comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
+
 ]
 
 

@@ -20,7 +20,7 @@
               <a href="{% url 'account_login' %}" class="btn btn-outline-secondary btn-sm">Log In</a>
               <a href="{% url 'subscribe_tease' %}" class="btn btn-danger btn-sm">Subscribe</a>
             {% else %}
-              <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-sm btn-outline-dark">Read More</a>
+              <a href="{% url 'posts:post_detail' slug=post.slug %}" class="btn btn-sm btn-outline-dark">Read More</a>
             {% endif %}
           </div>
         </div>

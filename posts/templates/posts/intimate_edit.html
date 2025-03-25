@@ -14,7 +14,7 @@
             <h5 class="card-title">{{ post.title }}</h5>
             <small class="text-muted">{{ post.date|date:"F j, Y" }}</small>
             <p class="mt-2">{{ post.intro|truncatewords:20 }}</p>
-            <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-danger btn-sm mt-2">Read More</a>
+            <a href="{% url 'posts:post_detail' slug=post.slug %}" class="btn btn-danger btn-sm mt-2">Read More</a>
           </div>
         </div>
       </div>

@@ -6,8 +6,12 @@ from django.db.models import Q
 from django.http import JsonResponse
 from .models import Post
 from django.contrib.auth.decorators import login_required
+from .models import Post, Comment
+from .forms import CommentForm
+from django.views.decorators.http import require_POST
 import stripe
 import re
+
 
 
 
@@ -15,32 +19,65 @@ import re
 # Set Stripe API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-
 # --------------------------
 # Individual Blog Post Detail
 # --------------------------
 
-
 def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
+    comments = Comment.objects.filter(post=post).order_by('-created_at')
 
-    # Split content into paragraphs using 2+ newlines
-    paragraphs = [p.strip() for p in re.split(r'\n{2,}', post.content) if p.strip()]
+    # Only allow commenting if user is authenticated AND subscribed
+    is_subscribed = False
+    if request.user.is_authenticated:
+        is_subscribed = (
+            hasattr(request.user, 'subscription') and
+            request.user.subscription.is_active
+        )
 
-    # Get related images by position
-    images_by_position = {img.position: img for img in post.images.all()}
-
-    # Create blocks for template
-    content_blocks = []
-    for idx, paragraph in enumerate(paragraphs, start=1):
-        content_blocks.append({'type': 'text', 'content': linebreaks(paragraph)})
-        if idx in images_by_position:
-            content_blocks.append({'type': 'image', 'image': images_by_position[idx], 'position': idx})
+    if request.method == 'POST' and is_subscribed:
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()
+            return redirect('posts:post_detail', slug=slug)
+    elif is_subscribed:
+        form = CommentForm()
+    else:
+        form = None  # Show prompt in template if not allowed to comment
 
     return render(request, 'posts/detail.html', {
         'post': post,
-        'content_blocks': content_blocks
+        'comments': comments,
+        'form': form,
+        'is_subscribed': is_subscribed,
     })
+
+# ------------------------------
+# comment edit deletePost Detail
+# ------------------------------
+@require_POST
+@login_required
+def edit_comment(request, slug, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, user=request.user)
+    body = request.POST.get("body", "").strip()
+    if body:
+        comment.body = body
+        comment.save()
+    return redirect('posts:post_detail', slug=slug)
+
+
+
+@require_POST
+@login_required
+def delete_comment(request, slug, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, user=request.user)
+    comment.delete()
+    return redirect('posts:post_detail', slug=slug)
+
+
 
 
 
@@ -52,7 +89,6 @@ def tease(request):
     return render(request, 'posts/tease.html', {
         'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY
     })
-
 
 # --------------------------
 # Stripe Checkout View
@@ -77,7 +113,6 @@ class CreateCheckoutSessionView(View):
         )
         return JsonResponse({'id': session.id})
 
-
 # --------------------------
 # Intimate Edit Tab (X-rated)
 # --------------------------
@@ -85,8 +120,6 @@ def intimate_edit(request):
     # Only show X-rated premium content (category = 'intimate')
     premium_posts = Post.objects.filter(is_premium=True, category='intimate').order_by('-date')
     return render(request, 'posts/intimate_edit.html', {'premium_posts': premium_posts})
-
-
 
 # --------------------------
 # Subscriber Exclusives Tab (All Premium Posts)
@@ -100,9 +133,6 @@ def subscriber_exclusives(request):
     return render(request, 'posts/subscriber_exclusives.html', {
         'premium_posts': premium_posts
     })
-
-
-
 
 # --------------------------
 # Search View (Accessible to All)

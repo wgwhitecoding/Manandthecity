@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+from ckeditor_uploader.fields import RichTextUploadingField  # ✅ CKEditor field
 
 class Post(models.Model):
     CATEGORY_CHOICES = [
@@ -14,7 +16,10 @@ class Post(models.Model):
     date = models.DateTimeField(default=timezone.now)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     intro = models.TextField(blank=True)
-    content = models.TextField()
+
+    # ✅ Replace basic TextField with CKEditor
+    content = RichTextUploadingField()
+
     is_premium = models.BooleanField(default=False)
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
 
@@ -35,6 +40,17 @@ class PostImage(models.Model):
 
     def __str__(self):
         return f"Image for '{self.post.title}' after paragraph {self.position}"
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.email} on {self.post.title}"
+
 
 
 
