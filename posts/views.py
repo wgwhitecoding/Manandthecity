@@ -1,11 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.conf import settings
 from django.views import View
+from django.utils.html import linebreaks
 from django.db.models import Q
 from django.http import JsonResponse
 from .models import Post
 from django.contrib.auth.decorators import login_required
 import stripe
+import re
+
+
+
 
 # Set Stripe API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -14,13 +19,30 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 # --------------------------
 # Individual Blog Post Detail
 # --------------------------
+
+
 def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
 
-    if post.is_premium and not request.user.is_authenticated:
-        return redirect('subscribe_tease')
+    # Split content into paragraphs using 2+ newlines
+    paragraphs = [p.strip() for p in re.split(r'\n{2,}', post.content) if p.strip()]
 
-    return render(request, 'posts/detail.html', {'post': post})
+    # Get related images by position
+    images_by_position = {img.position: img for img in post.images.all()}
+
+    # Create blocks for template
+    content_blocks = []
+    for idx, paragraph in enumerate(paragraphs, start=1):
+        content_blocks.append({'type': 'text', 'content': linebreaks(paragraph)})
+        if idx in images_by_position:
+            content_blocks.append({'type': 'image', 'image': images_by_position[idx], 'position': idx})
+
+    return render(request, 'posts/detail.html', {
+        'post': post,
+        'content_blocks': content_blocks
+    })
+
+
 
 
 # --------------------------

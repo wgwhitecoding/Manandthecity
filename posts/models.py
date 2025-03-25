@@ -28,3 +28,13 @@ class Post(models.Model):
         return self.title
 
 
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='post_images/')
+    position = models.PositiveIntegerField(help_text="Paragraph number after which this image should appear.")
+
+    def __str__(self):
+        return f"Image for '{self.post.title}' after paragraph {self.position}"
+
+
+

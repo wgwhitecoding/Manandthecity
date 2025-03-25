@@ -4,22 +4,23 @@
 {% block content %}
 <div class="container my-5">
 
-  <!-- Post header and rating card aligned horizontally -->
-  <div class="d-flex justify-content-between align-items-start flex-wrap">
-    <div class="me-3">
+  <!-- Header + Rating Card -->
+  <div class="row">
+    <div class="col-md-8">
       <h2>{{ post.title }}</h2>
       <p class="text-muted">{{ post.date|date:"F j, Y" }}</p>
+      <hr>
       <p class="lead">{{ post.intro }}</p>
     </div>
 
-    <!-- Rating Card aligned to top-right -->
-    <div class="rating-card" id="ratingCard">
-      <div class="card-inner">
-        <div class="card-front d-flex align-items-center justify-content-center p-4 bg-light border">
-          <strong>Click to Reveal Ratings</strong>
-        </div>
-        <div class="card-back bg-white border p-4 text-right">
-          {% if request.user.is_authenticated %}
+    <div class="col-md-4 d-flex justify-content-md-end justify-content-start">
+      <div class="rating-card" id="ratingCard">
+        <div class="card-inner">
+          <div class="card-front d-flex align-items-center justify-content-center p-4 bg-light border">
+            <strong>Click to Reveal Ratings</strong>
+          </div>
+          <div class="card-back bg-white border p-4 text-right">
+            {% if request.user.is_authenticated %}
             <h5 class="mb-3">Rating Breakdown</h5>
             <ul class="list-unstyled mb-0">
               <li><strong>Chemistry:</strong> {{ post.chemistry_rating }}/10</li>
@@ -27,23 +28,43 @@
               <li><strong>Looks:</strong> {{ post.looks_rating }}/10</li>
               <li><strong>Vibe:</strong> {{ post.vibe_rating }}/10</li>
             </ul>
-          {% else %}
+            {% else %}
             <p>This rating is 🔒 for subscribers only.</p>
-            <a href="{% url 'subscribe_tease' %}" class="btn btn-danger btn-sm mt-2">Subscribe to Unlock</a>
-          {% endif %}
+            <a href="{% url 'posts:subscribe_tease' %}" class="btn btn-danger btn-sm mt-2">Subscribe to Unlock</a>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  {% if post.image %}
-    <img src="{{ post.image.url }}" class="img-fluid my-3 rounded shadow-sm" alt="{{ post.title }}">
-  {% endif %}
-
   <hr>
-  <p>{{ post.content|linebreaks }}</p>
-</div>
+  <!-- Content Section (no extra container to avoid indenting) -->
+  <div class="mt-4">
+    {% for block in paragraphs %}
+    {% if block.type == 'text' %}
+    <div class="my-4">
+      <p class="fs-5">{{ block.content|safe }}</p>
+    </div>
+    {% elif block.type == 'image' %}
+    <div class="row my-4 align-items-center">
+      {% if forloop.counter|divisibleby:2 %}
+      <div class="col-md-6 text-end">
+        <img src="{{ block.image.image.url }}" class="img-fluid rounded shadow-sm custom-post-img" alt="Post image">
+      </div>
+      <div class="col-md-6 d-none d-md-block"></div>
+      {% else %}
+      <div class="col-md-6 d-none d-md-block"></div>
+      <div class="col-md-6 text-start">
+        <img src="{{ block.image.image.url }}" class="img-fluid rounded shadow-sm custom-post-img" alt="Post image">
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
 
+</div>
 <!-- Flip card styling -->
 <style>
   .rating-card {
@@ -52,6 +73,13 @@
     perspective: 1000px;
     cursor: pointer;
     margin-top: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .rating-card {
+      position: sticky;
+      top: 1rem;
+    }
   }
 
   .card-inner {
@@ -79,15 +107,12 @@
     transform: rotateY(180deg);
   }
 
-  @media (max-width: 768px) {
-    .d-flex {
-      flex-direction: column;
-    }
-
-    .rating-card {
-      align-self: start;
-      margin-top: 1rem;
-    }
+  .custom-post-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
   }
 </style>
 
@@ -95,9 +120,11 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const card = document.getElementById("ratingCard");
-    card.addEventListener("click", function () {
-      card.classList.toggle("flipped");
-    });
+    if (card) {
+      card.addEventListener("click", function () {
+        card.classList.toggle("flipped");
+      });
+    }
   });
 </script>
 {% endblock %}
