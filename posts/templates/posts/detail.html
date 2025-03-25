@@ -18,14 +18,14 @@
         <div class="card-front d-flex align-items-center justify-content-center p-4 bg-light border">
           <strong>Click to Reveal Ratings</strong>
         </div>
-        <div class="card-back bg-white border p-4 text-center">
+        <div class="card-back bg-white border p-4 text-right">
           {% if request.user.is_authenticated %}
             <h5 class="mb-3">Rating Breakdown</h5>
             <ul class="list-unstyled mb-0">
-              <li><strong>Chemistry:</strong> {{ post.chemistry_rating }}/5</li>
-              <li><strong>Banter:</strong> {{ post.banter_rating }}/5</li>
-              <li><strong>Looks:</strong> {{ post.looks_rating }}/5</li>
-              <li><strong>Vibe:</strong> {{ post.vibe_rating }}/5</li>
+              <li><strong>Chemistry:</strong> {{ post.chemistry_rating }}/10</li>
+              <li><strong>Banter:</strong> {{ post.banter_rating }}/10</li>
+              <li><strong>Looks:</strong> {{ post.looks_rating }}/10</li>
+              <li><strong>Vibe:</strong> {{ post.vibe_rating }}/10</li>
             </ul>
           {% else %}
             <p>This rating is 🔒 for subscribers only.</p>
@@ -58,7 +58,6 @@
     position: relative;
     width: 100%;
     height: 100%;
-    text-align: center;
     transition: transform 0.8s;
     transform-style: preserve-3d;
   }

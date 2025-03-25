@@ -40,6 +40,13 @@ def date_nights(request):
     posts = Post.objects.filter(category='date').order_by('-date')
     return render(request, 'core/date_nights.html', {'posts': posts})
 
+def ex_files(request):
+    posts = Post.objects.filter(category='ex').order_by('-date')
+    return render(request, 'core/ex_files.html', {'posts': posts})
+
+def love_and_heartbreak(request):
+    posts = Post.objects.filter(category='fun').order_by('-date')
+    return render(request, 'core/love_and_heartbreak.html', {'posts': posts})
 
 
 
