@@ -1,22 +1,30 @@
 {% extends 'base.html' %}
-{% block title %}Subscriber Exclusives{% endblock %}
+{% block title %}Subscriber Exclusives | Man and The City{% endblock %}
 
 {% block content %}
-  <div class="container my-4">
-    <h2 class="mb-4">🔒 Subscriber Exclusives</h2>
-    <div class="row">
-      {% for post in exclusive_posts %}
+<div class="container my-5">
+  <h2 class="mb-4"><span style="font-size: 1.4rem;">🔒</span> Subscriber Exclusives</h2>
+  <div class="row">
+    {% for post in premium_posts %}
       <div class="col-md-4 mb-4">
-        <div class="card border-danger h-100">
-          <div class="card-body">
+        <div class="card h-100 border-danger">
+          <div class="card-body text-center">
             <h5 class="card-title">{{ post.title }}</h5>
             <small class="text-muted">{{ post.date }}</small>
-            <p class="card-text mt-2">{{ post.preview }}</p>
-            <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-outline-dark btn-sm">Read More</a>
+            <p class="card-text mt-2 text-muted">
+              {{ post.intro }}
+            </p>
+            <p class="text-muted mt-3">
+              Exclusive post for subscribers 🔥
+            </p>
+            <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-danger btn-sm mt-2">Read More</a>
           </div>
         </div>
       </div>
-      {% endfor %}
-    </div>
+    {% empty %}
+      <p>No premium posts yet.</p>
+    {% endfor %}
   </div>
+</div>
 {% endblock %}
+

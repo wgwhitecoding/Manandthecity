@@ -2,25 +2,40 @@
 {% block title %}Date Nights | Man and The City{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-  <h2 class="mb-4">Date Night Stories</h2>
-  <div class="row">
-    {% for post in posts %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title">{{ post.title }}</h5>
-            <small class="text-muted">{{ post.date }}</small>
-            <p class="card-text mt-2 text-muted" style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;">
-              {{ post.intro }}
+<div class="row">
+  {% for post in posts %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 {% if post.is_premium %}border-danger{% endif %}">
+        <div class="card-body">
+          <h5 class="card-title">{{ post.title }}</h5>
+          <small class="text-muted">{{ post.date }}</small>
+          <p class="card-text mt-2 text-muted" style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;">
+            {{ post.intro }}
+          </p>
+
+          {% if post.is_premium %}
+            <p class="text-muted mt-2">
+              Exclusive post for subscribers 🔥
             </p>
+
+            {% if user.is_authenticated %}
+              <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-danger btn-sm">Read More</a>
+            {% else %}
+              <div class="d-flex gap-2">
+                <a href="{% url 'account_login' %}" class="btn btn-sm btn-outline-secondary">Log In</a>
+                <a href="{% url 'subscribe_tease' %}" class="btn btn-sm btn-danger">Subscribe</a>
+              </div>
+            {% endif %}
+          
+          {% else %}
             <a href="{% url 'post_detail' slug=post.slug %}" class="btn btn-sm btn-outline-dark">Read More</a>
-          </div>
+          {% endif %}
         </div>
       </div>
-    {% empty %}
-      <p>No date night stories yet. Stay tuned!</p>
-    {% endfor %}
-  </div>
+    </div>
+  {% empty %}
+    <p>No date night stories yet. Stay tuned!</p>
+  {% endfor %}
 </div>
+
 {% endblock %}

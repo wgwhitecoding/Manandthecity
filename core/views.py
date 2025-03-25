@@ -37,8 +37,12 @@ def homepage(request):
     })
 
 def date_nights(request):
-    posts = Post.objects.filter(is_premium=False).order_by('-date')
+    posts = Post.objects.filter(category='date').order_by('-date')
     return render(request, 'core/date_nights.html', {'posts': posts})
+
+
+
+
 
 
 
