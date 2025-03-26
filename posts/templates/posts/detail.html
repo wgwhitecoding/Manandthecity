@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}{{ post.title }} | Man and The City{% endblock %}
 
 {% block content %}
@@ -27,16 +28,20 @@
           </div>
           <div class="card-back bg-white border p-4">
             {% if request.user.is_authenticated %}
-              <h5 class="mb-3">Rating Breakdown</h5>
-              <ul class="list-unstyled mb-0">
-                <li class="d-flex justify-content-between"><strong>Chemistry:</strong> <span>{{ post.chemistry_rating }}/10</span></li>
-                <li class="d-flex justify-content-between"><strong>Banter:</strong> <span>{{ post.banter_rating }}/10</span></li>
-                <li class="d-flex justify-content-between"><strong>Looks:</strong> <span>{{ post.looks_rating }}/10</span></li>
-                <li class="d-flex justify-content-between"><strong>Vibe:</strong> <span>{{ post.vibe_rating }}/10</span></li>
-              </ul>
+            <h5 class="mb-3">Rating Breakdown</h5>
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex justify-content-between"><strong>Chemistry:</strong> <span>{{ post.chemistry_rating
+                  }}/10</span></li>
+              <li class="d-flex justify-content-between"><strong>Banter:</strong> <span>{{ post.banter_rating
+                  }}/10</span></li>
+              <li class="d-flex justify-content-between"><strong>Looks:</strong> <span>{{ post.looks_rating }}/10</span>
+              </li>
+              <li class="d-flex justify-content-between"><strong>Vibe:</strong> <span>{{ post.vibe_rating }}/10</span>
+              </li>
+            </ul>
             {% else %}
-              <p>This rating is 🔒 for subscribers only.</p>
-              <a href="{% url 'posts:subscribe_tease' %}" class="btn btn-danger btn-sm mt-2">Subscribe to Unlock</a>
+            <p>This rating is 🔒 for subscribers only.</p>
+            <a href="{% url 'posts:subscribe_tease' %}" class="btn btn-danger btn-sm mt-2">Subscribe to Unlock</a>
             {% endif %}
           </div>
         </div>
@@ -59,56 +64,175 @@
 <h4>Comments</h4>
 
 {% for comment in comments %}
-  <div class="mb-3 border p-3 rounded">
-    <strong>{{ comment.user.username }}</strong>
-    <small class="text-muted">{{ comment.created_at|date:"F j, Y H:i" }}</small>
+  <div class="mb-3 p-3 border rounded">
+    <div class="d-flex align-items-start">
+      <img src="{% static 'avatars/'|add:comment.user.profile.avatar|default:'avatar9.png' %}" 
+           class="rounded-circle me-3" style="width: 40px; height: 40px;" alt="avatar">
+      <div class="flex-grow-1">
+        <strong>{{ comment.user.username }}</strong>
+        <small class="text-muted d-block">{{ comment.created_at|date:"F j, Y H:i" }}</small>
 
-    {% if request.user == comment.user and request.user.subscription.is_active %}
-      <!-- View Mode -->
-      <p id="comment-text-{{ comment.id }}" class="mt-2">{{ comment.body|linebreaks }}</p>
+        <!-- Comment Text -->
+        <p id="comment-text-{{ comment.id }}" class="mt-2">{{ comment.body|linebreaks }}</p>
 
-      <!-- Edit Form (Hidden by default) -->
-      <form method="post" action="{% url 'posts:edit_comment' slug=post.slug comment_id=comment.id %}" class="mt-2 d-none" id="edit-form-{{ comment.id }}">
-        {% csrf_token %}
-        <textarea name="body" class="form-control form-control-sm mb-2" rows="2">{{ comment.body }}</textarea>
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-sm btn-dark">Comment</button>
-          <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ comment.id }}')">Cancel</button>
+        <!-- Edit Form -->
+        <form method="post" action="{% url 'posts:edit_comment' slug=post.slug comment_id=comment.id %}"
+              class="mt-2 d-none" id="edit-form-{{ comment.id }}">
+          {% csrf_token %}
+          <textarea name="body" class="form-control form-control-sm mb-2" rows="2">{{ comment.body }}</textarea>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ comment.id }}')">Cancel</button>
+          </div>
+        </form>
+
+        <!-- Action Buttons -->
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+          {% if request.user == comment.user and request.user.subscription.is_active %}
+            <button id="edit-btn-{{ comment.id }}" class="btn btn-sm btn-outline-primary" onclick="toggleEdit('{{ comment.id }}')">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}">Delete</button>
+          {% endif %}
+          {% if is_subscribed %}
+            <button class="btn btn-sm btn-outline-secondary" onclick="toggleReplyForm('{{ comment.id }}')">Reply</button>
+          {% endif %}
         </div>
-      </form>
 
-      <!-- Toggle Buttons -->
-      <div class="mt-2 d-flex gap-2">
-        <button id="edit-btn-{{ comment.id }}" class="btn btn-sm btn-outline-primary" onclick="toggleEdit('{{ comment.id }}')">Edit</button>
-        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}">Delete</button>
-      </div>
+        <!-- Reply Form -->
+        <form method="post" action="{% url 'posts:reply_to_comment' slug=post.slug comment_id=comment.id %}"
+              class="mt-2 d-none" id="reply-form-{{ comment.id }}">
+          {% csrf_token %}
+          <textarea name="body" class="form-control form-control-sm mb-2" rows="2" placeholder="Write a reply..."></textarea>
+          <button type="submit" class="btn btn-sm btn-dark">Reply</button>
+        </form>
 
-    {% else %}
-      <!-- Regular viewer -->
-      <p class="mt-2">{{ comment.body|linebreaks }}</p>
-    {% endif %}
+        <!-- Replies (first 3) -->
+        {% with replies=comment.replies.all %}
+        {% if replies %}
+          {% for reply in replies|slice:":3" %}
+            <div class="ms-4 mt-3 border-start ps-3">
+              <div class="d-flex align-items-start">
+                <img src="{% static 'avatars/'|add:reply.user.profile.avatar|default:'avatar9.png' %}" 
+                     class="rounded-circle me-2" style="width: 30px; height: 30px;" alt="avatar">
+                <div>
+                  <strong>{{ reply.user.username }}</strong>
+                  <small class="text-muted d-block">{{ reply.created_at|date:"F j, Y H:i" }}</small>
+                  <p class="mb-1" id="comment-text-{{ reply.id }}">{{ reply.body|linebreaks }}</p>
+
+                  <!-- Edit Reply Form -->
+                  <form method="post" action="{% url 'posts:edit_comment' slug=post.slug comment_id=reply.id %}"
+                        class="mt-2 d-none" id="edit-form-{{ reply.id }}">
+                    {% csrf_token %}
+                    <textarea name="body" class="form-control form-control-sm mb-2" rows="2">{{ reply.body }}</textarea>
+                    <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                      <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ reply.id }}')">Cancel</button>
+                    </div>
+                  </form>
+
+                  <!-- Action Buttons for Reply -->
+                  <div class="d-flex gap-2 mt-2 flex-wrap">
+                    {% if request.user == reply.user and request.user.subscription.is_active %}
+                      <button id="edit-btn-{{ reply.id }}" class="btn btn-sm btn-outline-primary" onclick="toggleEdit('{{ reply.id }}')">Edit</button>
+                      <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ reply.id }}">Delete</button>
+                    {% endif %}
+                    {% if is_subscribed %}
+                      <button class="btn btn-sm btn-outline-secondary" onclick="toggleReplyForm('{{ reply.id }}')">Reply</button>
+                    {% endif %}
+                  </div>
+
+                  <!-- Reply-to-Reply Form -->
+                  <form method="post" action="{% url 'posts:reply_to_comment' slug=post.slug comment_id=reply.id %}"
+                        class="mt-2 d-none" id="reply-form-{{ reply.id }}">
+                    {% csrf_token %}
+                    <textarea name="body" class="form-control form-control-sm mb-2" rows="2" placeholder="Write a reply..."></textarea>
+                    <button type="submit" class="btn btn-sm btn-dark">Reply</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+
+
+          {% if replies|length > 3 %}
+          <button class="btn btn-sm btn-link mt-2" onclick="toggleMoreReplies(this)">View more replies</button>
+          <div class="more-replies d-none">
+            {% for reply in replies|slice:"3:" %}
+              <div class="ms-4 mt-3 border-start ps-3">
+                <div class="d-flex align-items-start">
+                  <img src="{% static 'avatars/'|add:reply.user.profile.avatar|default:'avatar9.png' %}" 
+                       class="rounded-circle me-2" style="width: 30px; height: 30px;" alt="avatar">
+                  <div>
+                    <strong>{{ reply.user.username }}</strong>
+                    <small class="text-muted d-block">{{ reply.created_at|date:"F j, Y H:i" }}</small>
+                    <p class="mb-1" id="comment-text-{{ reply.id }}">{{ reply.body|linebreaks }}</p>
+
+                    <!-- Edit Reply Form -->
+                    <form method="post" action="{% url 'posts:edit_comment' slug=post.slug comment_id=reply.id %}"
+                          class="mt-2 d-none" id="edit-form-{{ reply.id }}">
+                      {% csrf_token %}
+                      <textarea name="body" class="form-control form-control-sm mb-2" rows="2">{{ reply.body }}</textarea>
+                      <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ reply.id }}')">Cancel</button>
+                      </div>
+                    </form>
+
+                    <!-- Buttons for extra replies -->
+                    <div class="d-flex gap-2 mt-2 flex-wrap">
+                      {% if request.user == reply.user and request.user.subscription.is_active %}
+                        <button id="edit-btn-{{ reply.id }}" class="btn btn-sm btn-outline-primary" onclick="toggleEdit('{{ reply.id }}')">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ reply.id }}">Delete</button>
+                      {% endif %}
+                      {% if is_subscribed %}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleReplyForm('{{ reply.id }}')">Reply</button>
+                      {% endif %}
+                    </div>
+
+                    <!-- Reply Form to reply -->
+                    <form method="post" action="{% url 'posts:reply_to_comment' slug=post.slug comment_id=reply.id %}"
+                          class="mt-2 d-none" id="reply-form-{{ reply.id }}">
+                      {% csrf_token %}
+                      <textarea name="body" class="form-control form-control-sm mb-2" rows="2" placeholder="Write a reply..."></textarea>
+                      <button type="submit" class="btn btn-sm btn-dark">Reply</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endif %}
+      {% endwith %}
+    </div>
   </div>
+</div>
 {% empty %}
-  <p>No comments yet.</p>
+<p>No comments yet.</p>
 {% endfor %}
+
+
+
+
 
 <hr>
 
+<hr>
 {% if request.user.is_authenticated and request.user.subscription.is_active %}
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-dark btn-sm">Post Comment</button>
-  </form>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-dark btn-sm">Post Comment</button>
+</form>
 {% elif request.user.is_authenticated %}
-  <div class="alert alert-info mt-4">
-    Want to join the conversation? <a href="{% url 'subscribe_tease' %}">Subscribe to comment.</a>
-  </div>
+<div class="alert alert-info mt-4">
+  Want to join the conversation? <a href="{% url 'subscribe_tease' %}">Subscribe to comment.</a>
+</div>
 {% else %}
-  <div class="alert alert-warning mt-4">
-    <a href="{% url 'account_login' %}">Log in</a> or <a href="{% url 'account_signup' %}">sign up</a> to view comments.
-  </div>
+<div class="alert alert-warning mt-4">
+  <a href="{% url 'account_login' %}">Log in</a> or <a href="{% url 'account_signup' %}">sign up</a> to view comments.
+</div>
 {% endif %}
+
 
 <!-- Delete confirmation modals -->
 {% for comment in comments %}
@@ -120,9 +244,7 @@
             <h5 class="modal-title" id="deleteModalLabel{{ comment.id }}">Confirm Delete</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-            Are you sure you want to delete this comment?
-          </div>
+          <div class="modal-body">Are you sure you want to delete this comment?</div>
           <div class="modal-footer">
             <form method="post" action="{% url 'posts:delete_comment' slug=post.slug comment_id=comment.id %}">
               {% csrf_token %}
@@ -134,7 +256,34 @@
       </div>
     </div>
   {% endif %}
+
+  <!-- Delete Modals for Replies -->
+  {% for reply in comment.replies.all %}
+    {% if reply.user == request.user and request.user.subscription.is_active %}
+      <div class="modal fade" id="deleteModal{{ reply.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ reply.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteModalLabel{{ reply.id }}">Confirm Delete</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">Are you sure you want to delete this reply?</div>
+            <div class="modal-footer">
+              <form method="post" action="{% url 'posts:delete_comment' slug=post.slug comment_id=reply.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm">Yes, delete</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
 {% endfor %}
+
+
+
 
 <!-- Font Awesome (if not already in base.html) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -205,19 +354,28 @@
       speechSynthesis.cancel();
     });
   });
-
-  function toggleEdit(commentId) {
-    document.getElementById('comment-text-' + commentId).classList.add('d-none');
-    document.getElementById('edit-form-' + commentId).classList.remove('d-none');
-    const editBtn = document.getElementById('edit-btn-' + commentId);
-    if (editBtn) editBtn.classList.add('d-none');
+  
+  function toggleEdit(id) {
+    document.getElementById('comment-text-' + id)?.classList.toggle('d-none');
+    document.getElementById('edit-form-' + id)?.classList.toggle('d-none');
+    document.getElementById('edit-btn-' + id)?.classList.toggle('d-none');
   }
 
-  function cancelEdit(commentId) {
-    document.getElementById('comment-text-' + commentId).classList.remove('d-none');
-    document.getElementById('edit-form-' + commentId).classList.add('d-none');
-    const editBtn = document.getElementById('edit-btn-' + commentId);
-    if (editBtn) editBtn.classList.remove('d-none');
+  function cancelEdit(id) {
+    toggleEdit(id);
   }
+
+  function toggleReplyForm(id) {
+    document.getElementById('reply-form-' + id)?.classList.toggle('d-none');
+  }
+
+  function toggleMoreReplies(button) {
+    const repliesDiv = button.nextElementSibling;
+    if (repliesDiv) {
+      repliesDiv.classList.remove('d-none');
+      button.remove(); // Remove button after expanding
+    }
+  }
+
 </script>
 {% endblock %}

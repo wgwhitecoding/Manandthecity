@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Settings – Man and The City{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+  <h2 class="mb-4">Your Settings</h2>
+
+  <!-- Flash messages -->
+  {% if messages %}
+    <div id="alertBox">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Current Avatar Preview + Username -->
+  <div class="position-relative d-inline-block mb-2" style="cursor: pointer;" id="avatarDropdownToggle">
+    <img src="{% static 'avatars/'|add:current_avatar %}" 
+         alt="Current Avatar"
+         class="rounded-circle border border-dark"
+         style="width: 100px; height: 100px;">
+    <i class="fas fa-caret-down position-absolute" style="bottom: 0; right: 0;"></i>
+  </div>
+
+  <div class="fw-bold mb-4">{{ request.user.username }}</div>
+
+  <!-- Avatar Dropdown (Initially Hidden) -->
+  <form method="POST" id="avatarForm">
+    {% csrf_token %}
+    <div id="avatarDropdownMenu" class="d-none mb-4">
+      <div class="d-flex flex-wrap justify-content-center gap-3">
+        {% for avatar in avatar_choices %}
+          <label class="text-center">
+            <input type="radio" name="avatar" value="{{ avatar }}" hidden
+                   {% if current_avatar == avatar %}checked{% endif %}
+                   onchange="document.getElementById('avatarForm').submit();">
+            <img src="{% static 'avatars/'|add:avatar %}"
+                 class="rounded-circle avatar-option {% if current_avatar == avatar %}selected-avatar{% endif %}"
+                 style="width: 60px; height: 60px; cursor: pointer;">
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Toggle dropdown visibility
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggle = document.getElementById("avatarDropdownToggle");
+    const menu = document.getElementById("avatarDropdownMenu");
+    const alertBox = document.getElementById("alertBox");
+
+    toggle.addEventListener("click", function () {
+      menu.classList.toggle("d-none");
+    });
+
+    // Auto-dismiss alerts after 3 seconds
+    if (alertBox) {
+      setTimeout(() => {
+        alertBox.style.display = "none";
+      }, 3000);
+    }
+  });
+</script>
+{% endblock %}

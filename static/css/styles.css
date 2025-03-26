@@ -135,3 +135,14 @@ body {
   font-size: 1rem;
   font-weight: 500;
 }
+
+
+
+/* settings */
+.avatar-option {
+  border: 3px solid transparent;
+}
+
+.selected-avatar {
+  border-color: #007bff;
+}

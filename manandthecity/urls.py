@@ -24,12 +24,13 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('', include('core.urls')),
     path('post/', include(('posts.urls', 'posts'), namespace='posts')),
-    path('accounts/', include('allauth.urls')),
-    
+    path('accounts/', include('allauth.urls')),  # Allauth
+    path('settings/', include(('user_accounts.urls', 'user_accounts'), namespace='user_accounts')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 
 
