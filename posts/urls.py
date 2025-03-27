@@ -9,6 +9,7 @@ urlpatterns = [
     path('create-checkout-session/', CreateCheckoutSessionView.as_view(), name='create_checkout_session'),
     path('intimate-edit/', views.intimate_edit, name='intimate_edit'),
     path('subscriber-exclusives/', views.subscriber_exclusives, name='subscriber_exclusives'),
+    path('comment/<int:comment_id>/like/', views.toggle_like, name='toggle_like'),
     path('search/', views.search, name='search'),
 
     # Comment actions

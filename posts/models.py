@@ -51,6 +51,23 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.post.title}"
+        
+    def liked_by(self, user):
+        return self.likes.filter(user=user).exists()
+
+class CommentLike(models.Model):
+    comment = models.ForeignKey(Comment, related_name='likes', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    liked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('comment', 'user')  # Prevent duplicate likes
+
+    def __str__(self):
+        return f"{self.user.username} liked comment {self.comment.id}"
+    
+    
+
 
 
 
